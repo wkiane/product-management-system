@@ -1,7 +1,7 @@
 <div class="navbar navbar-expand-md navbar-dark bg-dark">
 		<div class="container">
 			<div class="nabbar-header">
-				<a class="navbar-brand" href="http://localhost/alura/loja/">Minha Loja</a>
+				<a class="navbar-brand" href="http://localhost/alura/loja_oop/">Minha Loja</a>
 			</div>
 
 			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">

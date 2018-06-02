@@ -4,11 +4,13 @@
 
 		public function checkLogin() {
 			if(empty($_SESSION['id']) == false && ($_SESSION['status']) == 'admin') {
-		    	header("Location: index.php");
+		    	
 			}  elseif (empty($_SESSION['id']) == false && ($_SESSION['status']) == 'customer') {
 				header("Location: loja.php");
+				die();
 			} else {
 				header("Location: login.php");
+				die();
 			}
 		}
 
@@ -23,6 +25,7 @@
 				$_SESSION['id'] = $dados->id;
 				$_SESSION['status'] = $dados->status;
 				header("Location: index.php");
+				die();
 			} else {
 				echo 'Email ou senha incorreta';
 			}
@@ -31,6 +34,6 @@
 		public function deslogar() {
 			session_destroy();
 			header("Location: index.php");
+			die();
 		}
 	};
- ?>

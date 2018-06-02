@@ -4,10 +4,10 @@
 	function __autoload($class_name) {
     	require_once 'classes/' . $class_name . '.php';
     }
+    $db = new DB();
     
 	$login = new Login();
 	$login->checkLogin();
-    $db = new DB();
  ?>
 
  <!DOCTYPE html>
@@ -23,66 +23,84 @@
  	<?php require_once 'templates/nav.php'; ?>
  	<?php
  	$produto = new Produto();
-	if(isset($_GET['editar_produto'])) :
+	if(isset($_POST['editar_produto']) && !empty($_POST['categoria_id'])) :
 			$br = '<br>';
-		    $id = $_GET['id'];
-		    $nome = $_GET['nome'];
-		    $preco = $_GET['preco'];
-
-		    $produto->setNome($nome);
-		    $produto->setPreco($preco);
-		    $produto->update($id);
+		    $id = $_POST['id'];
+		    $nome = $_POST['nome'];
+		    $preco = $_POST['preco'];
+		    $descricao = $_POST['descricao'];
+		    $categoria_id = $_POST['categoria_id'];
+		    array_key_exists('gender', $_POST);
+		    $produto->editarProduto($nome, $preco, $descricao, $categoria_id, $id);
 	endif;
 	?>	
  	<div class="container">
- 		<?php if (!isset($_GET['acao']) || $_GET['acao'] !== 'editar'): ?>
- 			<div class="form-adcionar" method="GET" action="index.php">
+ 		<?php if (!isset($_POST['editar_link'])): ?>
+ 			<div class="form-adcionar" action="index.php">
 	 			<br>
 	 			<?php
 	 				$produto = new Produto();
-	 				if(isset($_GET['adicionar'])) {
-	 					// $id = $_POST['id'];
-	            		$nome = $_GET['nome'];
-	            		$preco = $_GET['preco'];
-
-	            		$produto->setNome($nome);
-	            		$produto->setPreco($preco);
-	            		if($produto->insert()) {
-	            			echo '<script>
-	            					alert("Seu produto foi adcionado com sucesso!");
-	            				</script>';
-	            		};
+	 				$categoria = new Categoria();
+	 				if(isset($_POST['adicionar']) && !empty($_POST['categoria_id'])) {
+	            		$nome = $_POST['nome'];
+	            		$preco = $_POST['preco'];
+	            		$descricao = $_POST['descricao'];
+	            		$categoria_id = $_POST['categoria_id'];
+	            		$produto->addProduto($nome, $preco, $descricao, $categoria_id);
 	 				}
 	 			?>
 	 			<h1 class="font-weight-light">Adicionar Produto</h1>
-	 			<form method="" class="form">
+	 			<form method="POST" class="form">
 	 				Nome: <input class="form-control my-1" type="text" name="nome">
 	 				Preco: <input class="form-control my-1" type="number" name="preco">
+	 				Descrição: <textarea class="form-control my-1" name="descricao"></textarea>
+	 				<?php foreach($categoria->findAll() as $categorias => $categoria) : ?>
+						<input type="radio" name="categoria_id" value="<?=$categoria->id?>">
+						<?=$categoria->nome;?><br>
+					<?php endforeach; ?>
 	 				<input type="submit" name="adicionar" value="Adicionar" class="btn btn-info my-3 btn-lg">
 	 			</form>
  			</div>
  		<?php endif ?>
 
+ 		<?php
+ 			if(isset($_GET['added']) && $_GET['added'] == 'true') {
+				echo '<p class="alert alert-success">Produto adicionado!</p>';
+			}
+
+			if(isset($_GET['removido']) && $_GET['removido'] == 'true') {
+				echo '<p class="alert alert-success">Produto removido!</p>';
+			}
+		?>
+
  		<div class="listar-prdutos">
  			<?php
-        		if(isset($_GET['acao']) && $_GET['acao'] == 'apagar') :
-            	$id = (int)$_GET['id'];
-            	$produto->delete($id);
+        		if(isset($_POST['apagar'])) :
+        			$id = (int)$_POST['id'];
+        			$produto->delete($id);
+        			header("Location: index.php?removido=true");
+        			die();
         		endif;
     		?>
 
     		<?php
     			$produto = new Produto();
-	        	if(isset($_GET['acao']) && $_GET['acao'] == 'editar') :
-	            $id = (int)$_GET['id'];
+    			$categoria = new Categoria();
+	        	if(isset($_POST['editar_link'])) :
+	            $id = (int)$_POST['id'];
             	$result = $produto->find($id);
     		?>
     			<br>
-	    		<h1>Editar</h1>
-	 			<form method="GET" class="form">
+	    		<h1 class="font-weight-light">Editar</h1>
+	 			<form method="POST" class="form">
 	 				Nome: <input class="form-control my-1" type="text" name="nome" value="<?= $result->nome; ?>">
 	 				Preco: <input class="form-control my-1" type="number" name="preco" value="<?= $result->preco; ?>">
+	 				Descrição: <textarea class="form-control my-1" name="descricao"><?= $result->descricao; ?></textarea>
 	 				<input type="hidden" name="id" value="<?= $result->id; ?>">
+	 				<?php foreach($categoria->findAll() as $categorias => $categoria) : ?>
+						<input type="radio" name="categoria_id" value="<?=$categoria->id?>">
+						<?=$categoria->nome;?><br>
+					<?php endforeach; ?>
 	 				<input type="submit" name="editar_produto" value="Editar" class="my-3 btn btn-info btn-lg">
 	 			</form>
     		<?php endif; ?>
@@ -93,6 +111,8 @@
 					<th scope="col">ID</th>
 			    	<th scope="col">Produto</th>
 			    	<th scope="col">Preço</th>
+			    	<th scope="col">Descrição</th>
+			    	<th scope="col">Categoria</th>
 			    	<th scope="col">Editar</th>
 			    	<th scope="col">Deletar</th>
 			    </tr>
@@ -103,8 +123,28 @@
 			    		<td><?= $value->id; ?></td>
 			    		<td><?= $value->nome; ?></td>
 			    		<td>R$ <?= $value->preco; ?></td>
-			    		<td class="padding-l"><a href="<?= 'index.php?acao=editar&id='.$value->id; ?>" class="link-color"><i class="fas fa-edit"></i></a></td>
-			    		<td class="padding-l"><a  href="<?= 'index.php?acao=apagar&id='.$value->id; ?>" class="link-color"><i class="far fa-trash-alt"></i></a></td>
+						<td>
+							<?php
+								if(strlen($value->descricao) >= 45) {
+									echo substr($value->descricao, 0, 45). '...';
+								} else {
+									echo $value->descricao;
+								};
+							?>
+						</td>
+						<td><?= $value->categoria_nome; ?></td>
+			    		<td class="padding-l">
+			    			<form action="" method="POST">
+			    				<input type="hidden" name="id" value="<?=$value->id?>">
+			    				<button class="btn btn-link text-secondary" name="editar_link"><i class="fas fa-edit"></i></button>
+			    			</form>
+			    		</td>
+			    		<td>
+			    			<form action="" method="POST">
+								<input type="hidden" name="id" value="<?=$value->id;?>">
+								<button class="btn btn-link text-secondary" name="apagar"><i class="far fa-trash-alt"></i></button>
+							</form>
+			    		</td>
 			    	</tr>
 			    <?php endforeach ?>
 			  </tbody>

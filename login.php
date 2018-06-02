@@ -3,8 +3,7 @@
 	require_once 'config.php';
 	function __autoload($class_name) {
     	require_once 'classes/' . $class_name . '.php';
-    }
-	
+    }	
 	if(isset($_POST['acao'])) {
 		$email = $_POST['email'];
 		$senha = md5($_POST['senha']);
@@ -12,7 +11,6 @@
 		$login = new Login();
 		$login->logar($email, $senha);
 	}
-    $db = new DB();
  ?>
 
 <!DOCTYPE html>
@@ -37,7 +35,7 @@
 			<div class="form-group">
 	        	<input class="form-control" type="password" name="senha" placeholder="Senha">
 	        </div>
-	        <a class="btn btn-outline-info btn-lg float-left" href="cadastrar.php">Criar sua conta</a>
+	        <a class="btn btn-outline-info btn-lg float-left" href="register.php">Criar sua conta</a>
 	        <input class="btn btn-info btn-lg float-right" type="submit" value="Entrar" name="acao">
 		</form>
     </div>
