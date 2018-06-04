@@ -6,6 +6,7 @@
 		private $nome;
 		private $preco;
 		private $descricao;
+		private $usado;
 		private $categoria_id;
 
 		// funcoes ligadas ao bd
@@ -26,23 +27,29 @@
 			$this->categoria_id = $categoria_id;
 		}
 
+		public function setUsado($usado) {
+			$this->usado = $usado;
+		}
+
 		public function insert() {
-			$sql = "INSERT INTO $this->table (nome, preco, descricao, categoria_id) VALUES (:nome, :preco, :descricao, :categoria_id)";
+			$sql = "INSERT INTO $this->table (nome, preco, descricao, categoria_id, usado) VALUES (:nome, :preco, :descricao, :categoria_id, :usado)";
 			$stmt = DB::prepare($sql);
 			$stmt->bindParam(':nome', $this->nome);
 			$stmt->bindParam(':preco', $this->preco);
 			$stmt->bindParam(':descricao', $this->descricao);
+			$stmt->bindParam(':usado', $this->usado);
 			$stmt->bindParam(':categoria_id', $this->categoria_id);
 			return $stmt->execute();
 		}
 
 		public function update($id) {
-			$sql = "UPDATE $this->table SET nome = :nome, preco = :preco, descricao = :descricao, categoria_id = :categoria_id WHERE id = :id";
+			$sql = "UPDATE $this->table SET nome = :nome, preco = :preco, descricao = :descricao, usado = :usado, categoria_id = :categoria_id WHERE id = :id";
 			$stmt = DB::prepare($sql);
 			$stmt->bindParam(':nome', $this->nome);
 			$stmt->bindParam(':preco', $this->preco);
 			$stmt->bindParam(':descricao', $this->descricao);
 			$stmt->bindParam(':categoria_id', $this->categoria_id);
+			$stmt->bindParam(':usado', $this->usado);
 			$stmt->bindParam(':id', $id);
 			return $stmt->execute();
 		}
@@ -55,21 +62,24 @@
         }
 		
 		// funcoes ligadas a interface
-		public function editarProduto($nome, $preco, $descricao, $categoria_id, $id) {
+		public function editarProduto($nome, $preco, $descricao, $categoria_id, $usado, $id) {
 			$this->setNome($nome);
 		    $this->setPreco($preco);
 		    $this->setDescricao($descricao);
 		    $this->setCategoria($categoria_id);
+		    $this->setUsado($usado);
 		    $this->update($id);
 		}
 
-		public function addProduto($nome, $preco, $descricao, $categoria_id) {
+		public function addProduto($nome, $preco, $descricao, $categoria_id, $usado) {
 			$this->setNome($nome);
 	        $this->setPreco($preco);
 	        $this->setDescricao($descricao);
 	        $this->setCategoria($categoria_id);
+	        $this->setUsado($usado);
 	        if($this->insert()) {
 	            header("Location: index.php?added=true");
+	            die();
 	        };
 		}
 	};

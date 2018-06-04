@@ -8,4 +8,8 @@
             $stmt->execute();
             return $stmt->fetchAll();
         }
+
+        public function radioButtonSelected() {
+        	
+        }
 	}

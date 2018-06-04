@@ -30,8 +30,12 @@
 		    $preco = $_POST['preco'];
 		    $descricao = $_POST['descricao'];
 		    $categoria_id = $_POST['categoria_id'];
-		    array_key_exists('gender', $_POST);
-		    $produto->editarProduto($nome, $preco, $descricao, $categoria_id, $id);
+		    if(isset($_POST['usado'])) {
+				$usado = true;
+			} else {
+				$usado = false;
+			};
+		    $produto->editarProduto($nome, $preco, $descricao, $categoria_id, $usado, $id);
 	endif;
 	?>	
  	<div class="container">
@@ -46,18 +50,28 @@
 	            		$preco = $_POST['preco'];
 	            		$descricao = $_POST['descricao'];
 	            		$categoria_id = $_POST['categoria_id'];
-	            		$produto->addProduto($nome, $preco, $descricao, $categoria_id);
+	            		 if(isset($_POST['usado'])) {
+							$usado = true;
+						} else {
+							$usado = false;
+						};
+	            		$produto->addProduto($nome, $preco, $descricao, $categoria_id, $usado);
 	 				}
 	 			?>
 	 			<h1 class="font-weight-light">Adicionar Produto</h1>
 	 			<form method="POST" class="form">
 	 				Nome: <input class="form-control my-1" type="text" name="nome">
 	 				Preco: <input class="form-control my-1" type="number" name="preco">
-	 				Descrição: <textarea class="form-control my-1" name="descricao"></textarea>
-	 				<?php foreach($categoria->findAll() as $categorias => $categoria) : ?>
-						<input type="radio" name="categoria_id" value="<?=$categoria->id?>">
-						<?=$categoria->nome;?><br>
-					<?php endforeach; ?>
+	 				Descrição: <textarea class="form-control mt-1 mb-2" name="descricao"></textarea>
+					<input type="checkbox" name="usado" id="usado" value="true">
+					<label class="text-secondary" for="usado">Usado</label>
+	 				<br>
+	 				<div class="pt-2"></div> Categoria: <div class="pb-2"></div>
+	 				<select name="categoria_id" class="form-control">
+		 				<?php foreach($categoria->findAll() as $categorias => $categoria) : ?>
+							<option value="<?=$categoria->id;?>"><?=$categoria->nome;?></option>
+						<?php endforeach; ?>
+					</select>
 	 				<input type="submit" name="adicionar" value="Adicionar" class="btn btn-info my-3 btn-lg">
 	 			</form>
  			</div>
@@ -89,6 +103,11 @@
 	        	if(isset($_POST['editar_link'])) :
 	            $id = (int)$_POST['id'];
             	$result = $produto->find($id);
+			    if (isset($produto->usado) && $produto->usado == 0) {
+					$usado = '';
+				} else {
+					$usado = "checked='checked'";
+				};
     		?>
     			<br>
 	    		<h1 class="font-weight-light">Editar</h1>
@@ -96,11 +115,18 @@
 	 				Nome: <input class="form-control my-1" type="text" name="nome" value="<?= $result->nome; ?>">
 	 				Preco: <input class="form-control my-1" type="number" name="preco" value="<?= $result->preco; ?>">
 	 				Descrição: <textarea class="form-control my-1" name="descricao"><?= $result->descricao; ?></textarea>
+	 				<input type="checkbox" name="usado" id="usado" value="true">
+					<label class="text-secondary" for="usado">Usado</label>
+	 				<br>
 	 				<input type="hidden" name="id" value="<?= $result->id; ?>">
-	 				<?php foreach($categoria->findAll() as $categorias => $categoria) : ?>
-						<input type="radio" name="categoria_id" value="<?=$categoria->id?>">
-						<?=$categoria->nome;?><br>
-					<?php endforeach; ?>
+	 				<div class="pt-2"></div> Categoria: <div class="pb-2"></div>
+	 				<select name="categoria_id" class="form-control">
+		 				<?php foreach($categoria->findAll() as $categorias => $categoria) :
+		 					
+		 				?>
+							<option value="<?=$categoria->id;?>"><?=$categoria->nome;?></option>
+						<?php endforeach; ?>
+					</select>
 	 				<input type="submit" name="editar_produto" value="Editar" class="my-3 btn btn-info btn-lg">
 	 			</form>
     		<?php endif; ?>
@@ -112,6 +138,7 @@
 			    	<th scope="col">Produto</th>
 			    	<th scope="col">Preço</th>
 			    	<th scope="col">Descrição</th>
+			    	<th scope="col">Usado</th>
 			    	<th scope="col">Categoria</th>
 			    	<th scope="col">Editar</th>
 			    	<th scope="col">Deletar</th>
@@ -131,6 +158,15 @@
 									echo $value->descricao;
 								};
 							?>
+						</td>
+						<td>
+							<?php 
+								if($value->usado == 0) {
+									echo 'Produto Novo';
+								} else {
+									echo 'Produto Usado';
+								}
+							 ?>
 						</td>
 						<td><?= $value->categoria_nome; ?></td>
 			    		<td class="padding-l">
